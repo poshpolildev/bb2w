@@ -26,7 +26,7 @@ export default async (req, res) => {
     // Use Resend to send the email.
     const { data, error } = await resend.emails.send({
       // IMPORTANT: Change this to a verified sender email from your Resend account.
-      from: 'Brain Box To Web <onboarding@resend.dev>', 
+      from: 'Brain Box To Web <noreply@brainboxtoweb.tech>',
       // IMPORTANT: Change this to the email address where you want to receive the messages.
       to: ['your-personal-email@example.com'], 
       subject: `New Inquiry from ${businessName}`,
