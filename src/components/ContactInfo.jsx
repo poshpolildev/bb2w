@@ -4,7 +4,7 @@ const ContactInfo = () => {
   return (
     <div className="w-full p-6 rounded-xl bg-form-container text-gray-300 space-y-3">
       <h3 className="text-xl font-bold text-white mb-2">যোগাযোগ করুন</h3>
-      <p><strong>ঠিকানা:</strong> ৬১- শুভ, ১১ নম্বর রোড, কসমোপলিটন রেসিডেন্সিয়াল এলাকা, ইস্ট নাসিরাবাদ, চট্টগ্রাম।</p>
+      <p><strong>ঠিকানা:</strong> ৬১- শুভ, ১১ নম্বর রোড, কসমোপলিটন আবাসিক এলাকা, পূর্ব নাসিরাবাদ, চট্টগ্রাম।</p>
       {/* The email address has been updated here */}
       <p><strong>ইমেইল:</strong> contact@brainboxtoweb.tech</p>
       <p><strong>ফোন:</strong> +৮৮০ ১৪০১ ৪০২ ২০৫</p>
