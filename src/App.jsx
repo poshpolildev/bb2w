@@ -10,15 +10,16 @@ const Header = () => (
   </header>
 );
 
-// Main App Component with the new two-column layout
+// Main App Component with the unscrollable desktop layout
 function App() {
   return (
-    <div className="bg-custom-blue text-white font-sans min-h-screen p-6">
+    // These classes make the layout unscrollable on large screens
+    <div className="bg-custom-blue text-white font-sans lg:h-screen lg:overflow-hidden p-6">
       <div className="container mx-auto max-w-6xl h-full flex flex-col">
         
         <Header />
 
-        {/* The main grid grows to fill the space and creates the two columns */}
+        {/* The main grid grows to fill the space between the header and the bottom of the screen */}
         <main className="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-x-16 gap-y-10">
 
           {/* --- LEFT COLUMN --- */}
