@@ -3,35 +3,47 @@ import { Resend } from 'resend';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export default async (req, res) => {
-  // We're keeping this check for security
+  // We only handle POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  console.log('--- Starting Test Email Function ---');
-
   try {
-    // We are ignoring the form data for this test.
-    // Instead, we are sending a hardcoded email.
+    // Now we are reading the actual data from the form submission
+    const { businessName, description, email } = req.body;
+
+    // We validate the real data
+    if (!businessName || !description || !email) {
+      return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    // And we use the real data in the email content
     const { data, error } = await resend.emails.send({
-      from: 'Test <noreply@brainboxtoweb.tech>',       // Uses your verified domain
-      to: ['poshpobarua@outlook.com'],                 // Sends to your email
-      subject: 'Hello from Your Website! (Test Email)',
-      html: '<h1>Success!</h1><p>If you received this email, your Resend API Key and domain are working correctly.</p>',
+      from: 'Brain Box To Web <noreply@brainboxtoweb.tech>',
+      to: ['poshpobarua@outlook.com'],
+      subject: `New Inquiry from ${businessName}`,
+      // The HTML now uses the variables from the form
+      html: `
+        <h1>New Business Inquiry</h1>
+        <p><strong>Business Name:</strong> ${businessName}</p>
+        <p><strong>Sender's Email:</strong> ${email}</p>
+        <hr>
+        <h2>Description:</h2>
+        <p>${description}</p>
+      `,
     });
 
-    // If Resend gives an error, we log it and send it back
     if (error) {
-      console.error('Error from Resend:', JSON.stringify(error, null, 2));
+      // If there's an error, log it for debugging
+      console.error('Error from Resend:', error);
       return res.status(400).json(error);
     }
 
-    // If the test email is sent successfully
-    console.log('Test email sent successfully:', data);
-    res.status(200).json({ message: 'Test email sent successfully!' });
+    // If successful, send a success message
+    res.status(200).json({ message: 'Email sent successfully!' });
 
   } catch (error) {
-    console.error('A server error occurred:', error);
+    console.error('Server Error:', error);
     res.status(500).json({ error: 'Something went wrong on the server.' });
   }
 };
