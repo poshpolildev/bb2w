@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { v2 as cloudinary } from 'cloudinary';
-import { IncomingForm } from 'formidable';
+// This is the corrected way to import Formidable v2
+import formidable from 'formidable';
 
 // Configure Cloudinary with your environment variables
 cloudinary.config({
@@ -25,12 +26,18 @@ export default async (req, res) => {
   }
 
   try {
-    // Use Formidable to parse the form data, including the file
-    const form = new IncomingForm();
-    const [fields, files] = await form.parse(req);
+    // This new code block correctly parses the form data
+    const data = await new Promise((resolve, reject) => {
+      const form = formidable();
+      form.parse(req, (err, fields, files) => {
+        if (err) reject({ err });
+        resolve({ fields, files });
+      });
+    });
 
+    const { fields, files } = data;
     const { businessName, description, email } = fields;
-    const imageFile = files.image; // 'image' must match the name in the frontend form
+    const imageFile = files.image;
 
     // Upload the image to Cloudinary
     let imageUrl = '';
@@ -40,7 +47,7 @@ export default async (req, res) => {
     }
 
     // Send the email with the image link included
-    const { data, error } = await resend.emails.send({
+    const { data: emailData, error } = await resend.emails.send({
       from: 'Brain Box To Web <noreply@brainboxtoweb.tech>',
       to: ['contact@brainboxtoweb.tech'],
       subject: `New Inquiry from ${businessName}`,
