@@ -1,6 +1,23 @@
 import { Resend } from 'resend';
+import { v2 as cloudinary } from 'cloudinary';
+import { IncomingForm } from 'formidable';
 
+// Configure Cloudinary with your environment variables
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configure Resend
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Vercel's body parser doesn't handle file uploads, so we disable it
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
 
 export default async (req, res) => {
   if (req.method !== 'POST') {
@@ -8,15 +25,23 @@ export default async (req, res) => {
   }
 
   try {
-    const { businessName, description, email } = req.body;
+    // Use Formidable to parse the form data, including the file
+    const form = new IncomingForm();
+    const [fields, files] = await form.parse(req);
 
-    if (!businessName || !description || !email) {
-      return res.status(400).json({ error: 'All fields are required.' });
+    const { businessName, description, email } = fields;
+    const imageFile = files.image; // 'image' must match the name in the frontend form
+
+    // Upload the image to Cloudinary
+    let imageUrl = '';
+    if (imageFile) {
+      const uploadResult = await cloudinary.uploader.upload(imageFile.filepath);
+      imageUrl = uploadResult.secure_url;
     }
 
+    // Send the email with the image link included
     const { data, error } = await resend.emails.send({
       from: 'Brain Box To Web <noreply@brainboxtoweb.tech>',
-      // The recipient email address has been updated here
       to: ['contact@brainboxtoweb.tech'],
       subject: `New Inquiry from ${businessName}`,
       html: `
@@ -26,6 +51,7 @@ export default async (req, res) => {
         <hr>
         <h2>Description:</h2>
         <p>${description}</p>
+        ${imageUrl ? `<h2>Uploaded Image:</h2><p><a href="${imageUrl}">View Image</a></p><img src="${imageUrl}" alt="User Upload" width="300"/>` : ''}
       `,
     });
 
@@ -34,10 +60,11 @@ export default async (req, res) => {
       return res.status(400).json(error);
     }
 
-    res.status(200).json({ message: 'Email sent successfully!' });
+    res.status(200).json({ message: 'Form submitted successfully!' });
 
   } catch (error) {
     console.error('Server Error:', error);
     res.status(500).json({ error: 'Something went wrong on the server.' });
   }
 };
+
